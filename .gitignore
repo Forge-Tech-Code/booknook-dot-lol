@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.log
+.vite/
+vite.config.js.timestamp-*
+# Screenshot work files (raw captures, backup zips with a real library). Never commit.
+scripts/.work/
