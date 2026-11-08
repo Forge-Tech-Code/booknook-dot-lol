@@ -23,6 +23,7 @@ export default function Layout({ depth = 0, header = true, children }) {
         <footer className="mx-auto max-w-6xl px-4 pb-10 pt-16 text-sm text-ink-soft sm:px-6">
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <a href={`${home}privacy/`}>Privacy</a>
+            <a href={`${home}terms/`}>Terms</a>
             <a href={`${home}delete-account/`}>Delete account</a>
             <a href={`mailto:${site.email}`}>{site.email}</a>
           </nav>

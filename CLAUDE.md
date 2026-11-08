@@ -5,10 +5,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 The website for **BookNook**, a cozy Android reading tracker sold on Google Play for $0.99. It is served at
-**https://booknook.lol/** and has three pages:
+**https://booknook.lol/** and has four pages:
 
 - `/`: the landing page.
 - `/privacy/`: the privacy policy.
+- `/terms/`: the terms of use (app, sync, fair use, liability).
 - `/delete-account/`: the account-deletion page.
 
 The Play Console links to the last two, which is the reason this site exists (see doopnet/booknook#1 on the forge).
@@ -26,7 +27,7 @@ FAQ-style padding to the landing page. The screenshots and the theme picker do t
 source ~/.nvm/nvm.sh        # node 24; /usr/bin/node is an old 18
 npm install
 npm run dev                 # http://localhost:5173
-npm run build               # prerenders all three pages to dist/
+npm run build               # prerenders all four pages to dist/
 npm run preview
 ```
 
@@ -62,7 +63,7 @@ A first visit saves nothing: only a pick in the picker is stored (`booknook.them
 
 - `base: './'` in `vite.config.js` is load-bearing. One build serves both `booknook.lol` and the github.io
   project-pages fallback (`forge-tech-code.github.io/booknook-dot-lol/`), where an absolute `/asset` path 404s.
-- `/privacy/` and `/delete-account/` sit one directory down, so their `./` paths break. Two fixes cover this:
+- `/privacy/`, `/terms/` and `/delete-account/` sit one directory down, so their `./` paths break. Two fixes cover this:
   - The `onPageRendered` hook in `vite.config.js` rewrites Vite's own `./` refs to `../`.
   - Our own references to `public/` go through `asset(path, depth)` and `prefix(depth)` in `src/images.js`.
 - `Layout` takes `depth`. `Prose` (the legal page shell) passes `depth={1}`.
@@ -152,6 +153,10 @@ account screen must never appear in a shot.
 - `src/pages/DeleteAccount.jsx` is the account-deletion page Play requires:
   - the in-app steps, which must match the app's Settings labels;
   - an email route to info@forge-tech.dev for people without the app.
+- `src/pages/Terms.jsx` is the terms of use, also linked from the Play Console. It is a plain-language
+  draft, not reviewed by a lawyer. It names no governing law on purpose (the company's country is not
+  recorded here) and instead keeps the user's own consumer-law rights. The "Settings → Backup" label must
+  match the app. Bump its "Last updated" date with any change.
 - Bump `<lastmod>` in `public/sitemap.xml` when a page's content changes.
 
 ## What is real and what is placeholder
