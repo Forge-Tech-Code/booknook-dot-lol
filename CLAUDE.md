@@ -39,11 +39,14 @@ The helpers in `scripts/` are run by hand, and their output is committed:
 uv run -q --with cairosvg --with Pillow python3 scripts/build-icons.py   # PNG icons from public/favicon.svg
 uv run -q --with Pillow python3 scripts/screens.py                       # raw captures -> public/screens/*.webp
 uv run -q python3 scripts/make-backup.py rows.json                       # library rows -> backup zips (see Screenshots)
-uv run -q --with Pillow python3 scripts/og.py                            # public/og.png from the hero (needs preview on :4317)
+uv run -q --with Pillow python3 scripts/og.py                            # public/og.png from the default hero (needs preview on :4317)
 ```
 
-Add `?mood=forest&mode=dark` to any page URL to open it in one look. It is applied after mount like the saved
-choice, so it is also how headless Firefox (`firefox --headless --screenshot`) checks each look.
+Add `?mood=dusk&mode=light` to any page URL to open it in one look. It is applied after mount like the saved
+choice, and `firefox --headless --screenshot` shoots **before** that, so its shot of a query URL mixes the default
+look's colours with the query's scene. Check other looks with a browser that can wait for the page to settle
+(Playwright's cached headless Chromium works), or shoot the plain URL for the default look.
+A first visit saves nothing: only a pick in the picker is stored (`booknook.theme.v2` in `localStorage`).
 
 ## Stack
 
@@ -76,11 +79,14 @@ choice, so it is also how headless Firefox (`firefox --headless --screenshot`) c
   CSS in a `<style>` tag. Tailwind colour names (`bg-surface`, `text-ink`, `bg-primary`, `text-on-header`…) all
   point at those variables, so one class is right in all ten looks.
 - **Don't add hex colours to components.** Use the variables, or add a token to every mood.
-- With no attributes (the prerendered HTML, or no JS), the page is Lo-fi Dusk and follows `prefers-color-scheme`,
-  like the app's "System" theme mode. `data-mode="light|dark"` forces one look, as the picker's Day/Night does.
+- The default look is **Forest Cabin at night** (`DEFAULT_MOOD` and `DEFAULT_MODE` in `src/moods.js`). With no
+  attributes (the prerendered HTML, or no JS), the page is that look, whatever the system's light/dark.
+  `data-mode="light|dark"` forces one look, as the picker's Day/Night does. `data-mode="system"` follows
+  `prefers-color-scheme`, like the app's "System" theme mode.
 - `src/mood.jsx` (`MoodProvider`, `useMood`) applies the saved choice **only after mount**, so the first client
   render matches the prerendered HTML. Don't read `localStorage` or `matchMedia` during render. `dark` is `null`
-  until mount in system mode, which means the CSS decides.
+  until mount in system mode, which means the CSS decides. A returning visitor briefly sees the default look
+  before their saved one.
 - Fonts are **Fredoka** (headings, `font-display`) and **Nunito** (body, `font-sans`). Both are the app's own
   variable TTFs from `booknook/app/src/main/res/font/`, subset to latin and latin-ext woff2 in `public/fonts/`.
 - Corner radii are the app's shapes (12/18/26/32px, as `rounded-sm/md/lg/xl`).
@@ -89,8 +95,8 @@ choice, so it is also how headless Firefox (`firefox --headless --screenshot`) c
 
 - An SVG version of the app's header scene: the sky, one view per mood, and the sill with the sleeping cat,
   blanket, plant, book stack, mug, and a candle at night. It is simplified from `AmbientScene.kt` and `CozyProps.kt`.
-- Parts that exist only by day or only by night carry `className="day"` or `"night"`. The CSS in `src/index.css`
-  shows and hides them with the same rule as `moodCss()`, so dark mode is right without JS.
+- Parts that exist only by day or only by night carry `className="day"` or `"night"`. `moodCss()` shows and
+  hides them (and colours the hills) with the same `data-mode` rules as the palette, so night is right without JS.
 - **No randomness.** Every position is fixed, because the page is prerendered and a random layout would not
   match on hydration.
 - Only one `<Scene>` may be on a page, because its gradient ids are global.
@@ -152,6 +158,8 @@ account screen must never appear in a shot.
 
 **Real:**
 - the name, the price ($0.99, one-time), and Android 8.0+;
+- the hero line ("A cozy little reading nook. Shelves for your books, and a cup of tea.") in `src/pages/Home.jsx`,
+  in the owner's wording;
 - the email `info@forge-tech.dev`;
 - the moods and their taglines (from `Mood.kt`);
 - the Play URL in `src/siteInfo.js`.
@@ -159,18 +167,16 @@ account screen must never appear in a shot.
 The Play URL is derived from the app's `applicationId` (`dev.forgetech.booknook`), so it is correct before the
 listing is live. It 404s until then.
 
-**Placeholder:**
-- the hero line ("Your books on three little shelves…") in `src/pages/Home.jsx`;
-- the captions in the `PEEK` list.
-
-Both were drafted here and await the owner's wording.
+**Placeholder:** the captions in the `PEEK` list. They were drafted here and await the owner's wording.
 
 JSON-LD (`MobileApplication`) claims only what's true. No ratings or reviews.
 
 ## Deployment
 
 - Push to `main`, and `.github/workflows/deploy.yml` builds and publishes `dist/` to GitHub Pages. It sets
-  `enablement: true`, so it turns Pages on rather than failing.
+  `enablement: true`, but that does **not** work here: the workflow's built-in token can't create a Pages
+  site ("Create Pages site failed … Resource not accessible by integration"). Pages was turned on by hand,
+  once, in Settings → Pages → Source → **GitHub Actions**. If the repo is ever recreated, do that first.
 - The repo is `Forge-Tech-Code/booknook-dot-lol` on GitHub.
 - `public/CNAME` (`booknook.lol`) keeps the custom domain attached. Deleting it drops the site back to github.io
   on the next deploy.

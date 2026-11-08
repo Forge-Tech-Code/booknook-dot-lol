@@ -35,19 +35,8 @@
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+2C60-2C7F, U+A720-A7FF;
 }
 
-/* ---- Day and night in the scene ------------------------------------------
-   Same rule as moodCss() in src/moods.js: no data-mode follows the system,
-   data-mode forces one. Hills are not per mood, only per time of day. */
-:root { --hill-2: #9DBE88; --hill-3: #6E9463; }
-.night { display: none; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-mode='light']) { --hill-2: #18292A; --hill-3: #122020; }
-  :root:not([data-mode='light']) .night { display: inline; }
-  :root:not([data-mode='light']) .day { display: none; }
-}
-:root[data-mode='dark'] { --hill-2: #18292A; --hill-3: #122020; }
-:root[data-mode='dark'] .night { display: inline; }
-:root[data-mode='dark'] .day { display: none; }
+/* Day and night in the scene (.day / .night, the hills) come from moodCss() in src/moods.js,
+   so they follow the same data-mode rules as the colours. */
 
 @layer base {
   html { -webkit-text-size-adjust: 100%; }

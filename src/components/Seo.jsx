@@ -18,7 +18,7 @@ export default function Seo({ title, description, path = '', jsonLd }) {
       <meta property="og:image" content={og} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content="BookNook: a sleeping cat on a windowsill at dusk" />
+      <meta property="og:image:alt" content="BookNook: a sleeping cat on a cabin windowsill at night" />
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:image" content={og} />
       {jsonLd && <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>}

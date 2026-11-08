@@ -1,17 +1,20 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react'
-import { DEFAULT_MOOD, MOODS } from './moods'
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { DEFAULT_MODE, DEFAULT_MOOD, MOODS } from './moods'
 
 /**
  * Which mood the page wears, and light/dark: 'system' | 'light' | 'dark',
  * like the app's ThemeMode.
  *
- * The prerendered HTML is always the default (Lo-fi Dusk, system), and the
- * saved choice is applied only after mount, so the first client render
+ * The prerendered HTML is always the default (DEFAULT_MOOD in DEFAULT_MODE),
+ * and the saved choice is applied only after mount, so the first client render
  * matches the HTML. The choice lives on <html data-mood data-mode>, which
  * the CSS from moods.js reads.
+ *
+ * Only a choice made in the picker is saved. (v1 of the key also saved the
+ * untouched default, so it is not read: it would hide the new default.)
  */
 const MoodContext = createContext(null)
-const KEY = 'booknook.theme'
+const KEY = 'booknook.theme.v2'
 
 function load() {
   try {
@@ -23,8 +26,9 @@ function load() {
 
 export function MoodProvider({ children }) {
   const [mood, setMoodState] = useState(DEFAULT_MOOD)
-  const [mode, setModeState] = useState('system')
+  const [mode, setModeState] = useState(DEFAULT_MODE)
   const [systemDark, setSystemDark] = useState(null) // null until mounted
+  const chosen = useRef(false) // set once the visitor picks a look
 
   useEffect(() => {
     const saved = load()
@@ -43,13 +47,13 @@ export function MoodProvider({ children }) {
   useEffect(() => {
     const root = document.documentElement
     root.dataset.mood = mood
-    if (mode === 'system') delete root.dataset.mode
-    else root.dataset.mode = mode
+    root.dataset.mode = mode
+    if (!chosen.current) return
     try { localStorage.setItem(KEY, JSON.stringify({ mood, mode })) } catch { /* ignore */ }
   }, [mood, mode])
 
-  const setMood = useCallback((m) => setMoodState(m), [])
-  const setMode = useCallback((m) => setModeState(m), [])
+  const setMood = useCallback((m) => { chosen.current = true; setMoodState(m) }, [])
+  const setMode = useCallback((m) => { chosen.current = true; setModeState(m) }, [])
   // The scheme actually showing. null before mount in system mode: the CSS decides.
   const dark = mode === 'system' ? systemDark : mode === 'dark'
 

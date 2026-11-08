@@ -125,28 +125,43 @@ export const MOODS = [
   },
 ]
 
-export const DEFAULT_MOOD = 'dusk'
-export const moodById = (id) => MOODS.find((m) => m.id === id) ?? MOODS[0]
+export const DEFAULT_MOOD = 'forest'
+/** 'system' | 'light' | 'dark'. A first visit lands on Forest Cabin at night. */
+export const DEFAULT_MODE = 'dark'
+export const moodById = (id) => MOODS.find((m) => m.id === id) ?? MOODS.find((m) => m.id === DEFAULT_MOOD)
 
 const kebab = (k) => k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)
 const vars = (p) => Object.entries(p).map(([k, v]) => `--${kebab(k)}:${v}`).join(';')
 
+// Which <html data-mode> states are dark: always, or only when the system is dark.
+// No data-mode at all (the prerendered HTML, or no JS) means DEFAULT_MODE.
+const DARK = ['[data-mode="dark"]', ...(DEFAULT_MODE === 'dark' ? [':not([data-mode])'] : [])]
+const DARK_IF_SYSTEM = ['[data-mode="system"]', ...(DEFAULT_MODE === 'system' ? [':not([data-mode])'] : [])]
+const each = (sels, states) => sels.flatMap((s) => states.map((st) => s + st)).join(',')
+
 /**
- * The CSS that maps <html data-mood data-mode> to custom properties.
+ * The CSS that maps <html data-mood data-mode> to custom properties, and the
+ * day/night parts of the window scene.
  *
- * With no attributes (prerendered HTML, no JS) the page is Lo-fi Dusk and
- * follows the system light/dark, like the app's "System" theme mode.
- * data-mode="light" / "dark" forces one, as the app's toggle does.
+ * With no attributes (prerendered HTML, no JS) the page is DEFAULT_MOOD in
+ * DEFAULT_MODE. data-mode="system" follows the system light/dark, like the
+ * app's "System" theme mode; "light" / "dark" force one, as its toggle does.
  */
 export function moodCss() {
   const out = []
   for (const m of MOODS) {
-    const sel = m.id === DEFAULT_MOOD ? `:root:not([data-mood]),:root[data-mood="${m.id}"]` : `:root[data-mood="${m.id}"]`
-    const dark = sel.split(',').map((s) => `${s}:not([data-mode="light"])`).join(',')
-    const forced = sel.split(',').map((s) => `${s}[data-mode="dark"]`).join(',')
-    out.push(`${sel}{${vars(m.light)};color-scheme:light}`)
-    out.push(`@media (prefers-color-scheme: dark){${dark}{${vars(m.dark)};color-scheme:dark}}`)
-    out.push(`${forced}{${vars(m.dark)};color-scheme:dark}`)
+    const sel = m.id === DEFAULT_MOOD ? [':root:not([data-mood])', `:root[data-mood="${m.id}"]`] : [`:root[data-mood="${m.id}"]`]
+    out.push(`${sel.join(',')}{${vars(m.light)};color-scheme:light}`)
+    out.push(`${each(sel, DARK)}{${vars(m.dark)};color-scheme:dark}`)
+    out.push(`@media (prefers-color-scheme: dark){${each(sel, DARK_IF_SYSTEM)}{${vars(m.dark)};color-scheme:dark}}`)
   }
+  // Scene parts that exist only by day or only by night, and the hills (per time of day, not per mood).
+  const night = '{--hill-2:#18292A;--hill-3:#122020}'
+  const show = (states) => `${each([':root'], states)}${night}` +
+    `${each([':root'], states.map((s) => s + ' .night'))}{display:inline}` +
+    `${each([':root'], states.map((s) => s + ' .day'))}{display:none}`
+  out.push(':root{--hill-2:#9DBE88;--hill-3:#6E9463}.night{display:none}')
+  out.push(show(DARK))
+  out.push(`@media (prefers-color-scheme: dark){${show(DARK_IF_SYSTEM)}}`)
   return out.join('\n')
 }

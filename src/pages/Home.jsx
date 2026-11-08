@@ -52,13 +52,12 @@ export default function Home() {
           <div>
             <Window />
             <div className="pt-8 text-center lg:text-left">
-              {/* Draft line, waiting on the owner's wording. See CLAUDE.md → What is placeholder. */}
               <p className="mx-auto max-w-xl font-display text-2xl leading-snug text-ink sm:text-3xl lg:mx-0">
-                Your books on three little shelves: read, reading, and someday.
+                A cozy little reading nook. Shelves for your books, and a cup of tea.
               </p>
               <div className="mt-7 flex flex-col items-center gap-3 lg:items-start">
                 <PlayButton />
-                <p className="text-sm text-ink-soft">Android 8.0 and up · one-time purchase, no ads</p>
+                <p className="text-sm text-ink-soft opacity-70">Android 8.0 and up · one-time purchase, no ads</p>
               </div>
             </div>
           </div>

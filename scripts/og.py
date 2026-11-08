@@ -1,6 +1,11 @@
-"""public/og.png (1200x630 link preview): the Lo-fi Dusk day hero, screenshotted
-with headless Firefox from a running `npm run preview`, with the text below the
-window replaced by a clean tagline strip.
+"""public/og.png (1200x630 link preview): the hero as a first visit sees it (the
+default look, Forest Cabin at night), screenshotted with headless Firefox from a
+running `npm run preview`, with the text below the window replaced by a clean
+tagline strip.
+
+It shoots the plain URL on purpose: Firefox takes the shot before the page applies
+a ?mood=…&mode=… look, so a query gives one look's scene in another's colours.
+The caption colours are Forest Cabin's night `ink` and `primary` (src/moods.js).
 
     npm run build && npx vite preview --port 4317 &
     uv run -q --with Pillow python3 scripts/og.py
@@ -14,7 +19,7 @@ FONTS = Path.home() / "repositories/f0rg3t3ch@git.doopnet.cloud/booknook/app/src
 tmp = Path(tempfile.mkdtemp())
 raw_png = tmp / "raw.png"
 subprocess.run(["firefox", "--headless", "--profile", str(tmp), "--no-remote", "--window-size=1240,700",
-                "--screenshot", str(raw_png), "http://localhost:4317/?mood=dusk&mode=light"], check=True, timeout=90)
+                "--screenshot", str(raw_png), "http://localhost:4317/"], check=True, timeout=90)
 raw = Image.open(raw_png).convert("RGB")
 bg = raw.getpixel((5, 695))
 im = raw.crop((20, 10, 1220, 640))
@@ -34,7 +39,7 @@ for f, w in ((f1, 500), (f2, 700)):
         f.set_variation_by_axes([w])
     except Exception:
         pass
-d.text((42, 506), "Your books on three little shelves.", font=f1, fill="#3A2A35")
-d.text((42, 566), "booknook.lol  ·  $0.99 on Google Play", font=f2, fill="#B4566B")
+d.text((42, 506), "A cozy little reading nook.", font=f1, fill="#E1E6D9")
+d.text((42, 566), "booknook.lol  ·  $0.99 on Google Play", font=f2, fill="#A6CFA0")
 im.save(ROOT / "public/og.png", optimize=True)
 print("public/og.png")
